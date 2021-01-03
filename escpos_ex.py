@@ -8,6 +8,25 @@ from PIL import ImageFont
 
 import unicodedata
 import datetime
+import subprocess
+
+
+def set_patlite_progress(progress):
+    if progress == 0:
+        subprocess.call(' '.join(['rsh', '192.168.10.1', '-l', 'pi', 'alert', '000000', '0']), shell=True)
+    elif progress == 1:
+        subprocess.call(' '.join(['rsh', '192.168.10.1', '-l', 'pi', 'alert', '002000', '0']), shell=True)
+    elif progress == 2:
+        subprocess.call(' '.join(['rsh', '192.168.10.1', '-l', 'pi', 'alert', '021000', '0']), shell=True)
+    elif progress == 3:
+        subprocess.call(' '.join(['rsh', '192.168.10.1', '-l', 'pi', 'alert', '211000', '0']), shell=True)
+    elif progress == 4:
+        subprocess.call(' '.join(['rsh', '192.168.10.1', '-l', 'pi', 'alert', '000000', '0']), shell=True)
+        subprocess.call(' '.join(['rsh', '192.168.10.1', '-l', 'pi', 'alert', '111000', '2']), shell=True)
+
+
+def set_patlite(cmd, t):
+    subprocess.call(' '.join(['rsh', '192.168.10.1', '-l', 'pi', 'alert', str(cmd), str(t)]), shell=True)
 
 
 def get_east_asian_width_count(text):
@@ -32,7 +51,7 @@ def print_text(text, headers='', pil_obj=None):
         
         im_resized_tmp = pil_obj.resize((390, height_p), Image.LANCZOS)
 
-        x1, y1, x2, y2 = 0, 0, 390, pil_obj.height+1
+        x1, y1, x2, y2 = 0, 0, 390, im_resized_tmp.height+1
         im_resized = Image.new('RGB', (x2 - x1, y2 - y1), (255, 255, 255))
         im_resized.paste(im_resized_tmp, (-x1, -y1))
         im_resized.save('img/'+dt_now.strftime('%Y-%m-%d_%H-%M-%S')+'_IMG.png', quality=95)
@@ -83,17 +102,17 @@ def print_text(text, headers='', pil_obj=None):
     image.paste(image_tmp, (-x1, -y1))
     image.save('img/'+dt_now.strftime('%Y-%m-%d_%H-%M-%S')+'.jpg', quality=95)
 
-
+    set_patlite_progress(3)
     # 印刷実行
     p = Usb(0x0416, 0x5011, 0, 0x81, 0x01)
     p.text(" ")
     p.image(image)
     if pil_obj is not None:
         p.image(im_resized)
-    p.text(" ")
     p.cut()
     p.close()
-    print("dsfgsgdsf")
+
+
 
 
 def print_image(pil_obj):

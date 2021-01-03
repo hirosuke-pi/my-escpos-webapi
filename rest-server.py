@@ -20,12 +20,13 @@ res_json = {
     'status' : 'success',
     'msg-jp' : ''
 }
- 
+
 
 @api.route('/print', methods=["GET", "POST", "OPTIONS"])
 @cross_origin()
 def get_user():
     global cmd_list
+    escpos_ex.set_patlite_progress(1)
 
     if request.method == "GET":
         return send_req_error('許可されていないメソッドです', 405)
@@ -63,14 +64,16 @@ def get_user():
             print(traceback.format_exc())
             type_, value_, traceback_ = sys.exc_info()
             return send_req_error('画像データをデコードできませんでした - ' + str(value_), 406)
-
+    
+    escpos_ex.set_patlite_progress(2)
     try:
         escpos_ex.print_text(text, headers, pil_obj)
     except Exception as e:
         print(traceback.format_exc())
         type_, value_, traceback_ = sys.exc_info()
         return send_req_error('印刷エラー - '+ str(value_), 506)
-
+    
+    escpos_ex.set_patlite_progress(4)
     return send_req_success('印刷完了しました')
     
 
@@ -84,6 +87,8 @@ def send_req_error(msg, code):
     global res_json
     res_json['status'] = 'error'
     res_json['msg-jp'] = msg
+    escpos_ex.set_patlite_progress(0)
+    escpos_ex.set_patlite('200000', '5')
     return make_response(json.dumps(res_json, ensure_ascii=False), code)
 
 def send_req_success(msg):
